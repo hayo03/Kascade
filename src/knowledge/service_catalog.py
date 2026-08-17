@@ -49,7 +49,8 @@ SERVICE_CATALOG = [
         service_id="edge-compute-001",
         name="Automotive Edge Compute",
         capabilities=[
-            "edge_compute"
+            "edge_compute",
+            "low_latency"
         ],
         domain="automotive",
         properties={

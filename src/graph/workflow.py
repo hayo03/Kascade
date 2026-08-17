@@ -11,31 +11,23 @@ from src.agents.interpreter import (
     interpret_intent
 )
 
+from src.agents.discovery import (
+    discover_services
+)
+
 from src.agents.selector import (
     select_services
 )
-
-from src.knowledge.service_catalog import (
-    get_service_catalog
-)
-
-
-def load_candidates(state: KascadeState) -> dict:
-
-    services = get_service_catalog()
-
-    return {
-        "candidate_services": services,
-        "current_agent": "ServiceDiscovery",
-        "status": "SERVICES_DISCOVERED"
-    }
 
 
 def build_graph():
 
     graph = StateGraph(KascadeState)
 
+    # --------------------------------
     # Nodes
+    # --------------------------------
+
     graph.add_node(
         "orchestrator_start",
         orchestrator_start
@@ -48,7 +40,7 @@ def build_graph():
 
     graph.add_node(
         "service_discovery",
-        load_candidates
+        discover_services
     )
 
     graph.add_node(
@@ -61,7 +53,9 @@ def build_graph():
         orchestrator_finalize
     )
 
-    # Edges
+    # --------------------------------
+    # Workflow
+    # --------------------------------
 
     graph.add_edge(
         START,

@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+from src.utils.tracing import trace_agent
 from langchain_openai import ChatOpenAI
 
 from src.models.schemas import (
@@ -76,7 +76,16 @@ Selection rules:
 Return ONLY the structured service selection.
 """
 
+   
     selection = selector_llm.invoke(prompt)
+
+    trace_agent(
+    agent_name="SERVICE SELECTOR",
+    message="Best service candidate(s) selected.",
+    data=selection.model_dump()
+)
+
+
 
     return {
         "selection": selection,
