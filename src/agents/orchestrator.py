@@ -2,28 +2,55 @@ from src.models.schemas import KascadeState
 from src.utils.tracing import trace_agent
 
 
-def orchestrator_start(state: KascadeState) -> dict:
+def orchestrator(state: KascadeState) -> dict:
+    """
+    Procedural orchestrator.
+
+    It does not perform semantic reasoning.
+    It only coordinates lifecycle transitions.
+    """
 
     trace_agent(
         agent_name="ORCHESTRATOR",
-        message="Starting KASCADE workflow.",
+        message="Evaluating current lifecycle state.",
         data={
-            "user_request": state.user_request
-        }
+            "has_intent": state.intent is not None,
+            "candidate_count": len(state.candidate_services),
+            "has_selection": state.selection is not None,
+        },
     )
 
     return {
         "current_agent": "Orchestrator",
-        "status": "STARTED"
+        "status": "ROUTING",
     }
+
+
+def route_next_agent(state: KascadeState) -> str:
+    """
+    Determine the next lifecycle stage.
+    """
+
+    # Stage 1: Intent interpretation
+    if state.intent is None:
+        return "intent_interpreter"
+
+    # Stage 2: Service discovery
+    if not state.candidate_services:
+        return "service_discovery"
+
+    # Stage 3: Service selection
+    if state.selection is None:
+        return "service_selector"
+
+    # Workflow completed
+    return "orchestrator_finalize"
 
 
 def orchestrator_finalize(state: KascadeState) -> dict:
 
     intent = state.intent
     selection = state.selection
-
-    selected_ids = selection.selected_services
 
     response = f"""
 KASCADE Composition Result
@@ -38,7 +65,7 @@ Required Capabilities:
 {", ".join(intent.required_capabilities)}
 
 Selected Services:
-{", ".join(selected_ids)}
+{", ".join(selection.selected_services)}
 
 Reason:
 {selection.justification}
@@ -46,15 +73,14 @@ Reason:
 
     trace_agent(
         agent_name="ORCHESTRATOR",
-        message="Composition workflow completed.",
+        message="KASCADE composition workflow completed.",
         data={
-            "selected_services": selected_ids,
-            "status": "COMPLETED"
-        }
+            "selected_services": selection.selected_services
+        },
     )
 
     return {
         "current_agent": "Orchestrator",
         "status": "COMPLETED",
-        "final_response": response
+        "final_response": response,
     }
