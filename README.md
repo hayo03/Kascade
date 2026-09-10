@@ -26,7 +26,7 @@ Create a .env file in the project root:
 ```
 OPENAI_API_KEY=your_api_key_here
 ```
-Do not commit the .env file to GitHub.
+
 
 ### 4. Run the demo
 
